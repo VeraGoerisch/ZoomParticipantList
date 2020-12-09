@@ -1,17 +1,30 @@
 <template>
   <div id="app">
     <img alt="SDCIA logo" src="./assets/logo.png" />
-    <MainContainer />
+    <ParticipantList v-if="participants.length" :participants="participants" />
+    <InputPage v-else @results="updateList" />
   </div>
 </template>
 
 <script>
-import MainContainer from './components/MainContainer.vue';
+import InputPage from './components/InputPage.vue';
+import ParticipantList from './components/ParticipantList';
 
 export default {
   name: 'App',
   components: {
-    MainContainer,
+    InputPage,
+    ParticipantList,
+  },
+  data() {
+    return {
+      participants: [],
+    };
+  },
+  methods: {
+    updateList(results) {
+      this.participants = results;
+    },
   },
 };
 </script>
