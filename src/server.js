@@ -2,6 +2,7 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const express = require('express');
 const axios = require('axios');
+const PORT = process.env.PORT || 3080;
 
 const app = express();
 
@@ -102,6 +103,6 @@ function filterActiveParticipants(participants) {
   return participants.filter(participant => !participant.leave_time);
 }
 
-app.listen(3080, () => {
-  console.log('App is listening on port 3080');
+app.listen(PORT, () => {
+  console.log(`Listening on ${PORT}`);
 });
