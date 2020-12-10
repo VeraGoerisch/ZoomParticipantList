@@ -1,29 +1,43 @@
 <template>
   <div id="app">
-    <img alt="SDCIA logo" src="./assets/logo.png" />
-    <ParticipantList v-if="participants.length" :participants="participants" />
-    <InputPage v-else @results="updateList" />
+    <img v-if="!showPrizeWheel" alt="SDCIA logo" src="./assets/logo.png" />
+    <PrizeWheel v-if="showPrizeWheel" :participants="participants" />
+    <ParticipantList v-if="showParticipantList" :participants="participants" />
+    <InputPage
+      v-if="!participants.length"
+      @results="setResults"
+      @live-results="setLiveResults"
+    />
   </div>
 </template>
 
 <script>
 import InputPage from './components/InputPage.vue';
 import ParticipantList from './components/ParticipantList';
+import PrizeWheel from './components/PrizeWheel';
 
 export default {
   name: 'App',
   components: {
     InputPage,
     ParticipantList,
+    PrizeWheel,
   },
   data() {
     return {
       participants: [],
+      showPrizeWheel: false,
+      showParticipantList: false,
     };
   },
   methods: {
-    updateList(results) {
+    setLiveResults(results) {
       this.participants = results;
+      this.showPrizeWheel = true;
+    },
+    setResults(results) {
+      this.participants = results;
+      this.showParticipantList = true;
     },
   },
 };

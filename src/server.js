@@ -12,9 +12,7 @@ const payload = {
 const token = jwt.sign(payload, process.env.SECRET);
 
 app.get('/api/participants', async function(req, res) {
-  const meetingType = req.query.meetingType;
-  const meetingId = req.query.meetingId;
-  const participantStatus = req.query.participantStatus;
+  const { meetingType, meetingId, participantStatus } = req.query;
   try {
     const participants = await fetchParticipants(
       meetingId,
@@ -42,14 +40,7 @@ app.get('/api/live-participants', async function(req, res) {
 async function getMeetingId() {
   const userId = process.env.USER_ID;
   const url = `https://api.zoom.us/v2/users/${userId}/meetings`;
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    params: {
-      type: 'live',
-    },
-  };
+  const config = getConfig('live');
   const response = await axios.get(url, config);
   if (!response.data.meetings.length) {
     throw new Error('There are no meetings currently running.');
@@ -71,7 +62,18 @@ async function fetchParticipants(
   if (!meetingId) {
     throw new Error('Meeting ID is required.');
   }
-  const config = {
+  const config = getConfig(meetingType);
+  const url = `https://api.zoom.us/v2/metrics/meetings/${meetingId}/participants`;
+  const response = await axios.get(url, config);
+  const participants =
+    participantStatus === 'active'
+      ? filterActiveParticipants(response.data.participants)
+      : response.data.participants;
+  return participants;
+}
+
+function getConfig(meetingType) {
+  return {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -80,15 +82,6 @@ async function fetchParticipants(
       page_size: 300,
     },
   };
-  const url = `https://api.zoom.us/v2/metrics/meetings/${meetingId}/participants`;
-  const response = await axios.get(url, config);
-  const participants =
-    participantStatus === 'active'
-      ? response.data.participants.filter(
-          participant => !participant.leave_time
-        )
-      : response.data.participants;
-  return participants;
 }
 
 function parseError(e) {
@@ -103,6 +96,10 @@ function parseError(e) {
       : 'Something went wrong, please try again later.';
   }
   return error;
+}
+
+function filterActiveParticipants(participants) {
+  return participants.filter(participant => !participant.leave_time);
 }
 
 app.listen(3080, () => {

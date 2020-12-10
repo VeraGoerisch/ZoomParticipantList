@@ -7,12 +7,13 @@
     <div v-else v-loading="loading" element-loading-spinner="el-icon-loading">
       <h2>Welcome to SDCIA participant list generator!</h2>
       <el-button id="live-btn" type="primary" @click="generateLiveList"
-        >LIVE List</el-button
+        >LIVE Drawing</el-button
       >
       <el-tooltip effect="light" placement="right" popper-class="help">
         <div slot="content">
           <p>
-            Generate a list of participants currently present in a live meeting.
+            Generate a list of participants currently present in a live meeting
+            and automatically enter them into a drawing.
           </p>
           <p>CAUTION: do not use if you have more than one meeting running.</p>
         </div>
@@ -23,7 +24,7 @@
         Generate a list of past meeting participants:
       </p>
       <el-input
-        v-validate.disable="'required|numeric|min:10|max:11'"
+        v-validate.disable="{ required: true, regex: /^[\d\s]+$/ }"
         placeholder="Enter Meeting Id"
         v-model="meetingId"
         id="id"
@@ -55,7 +56,7 @@ export default {
       axios
         .get('api/live-participants')
         .then(response => {
-          this.$emit('results', response.data);
+          this.$emit('live-results', response.data);
         })
         .catch(error => {
           this.loading = false;
@@ -69,7 +70,7 @@ export default {
           params: {
             meetingType: 'past',
             participantStatus: 'all',
-            meetingId: this.meetingId,
+            meetingId: this.meetingId.replace(/\s/g, ''),
           },
         })
         .then(response => {

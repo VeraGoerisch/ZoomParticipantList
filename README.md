@@ -1,24 +1,13 @@
-# zoom_prize_wheel
+# Zoom Participant List And LIVE Raffle Wheel
 
-## Project setup
-```
-npm install
-```
+## Part 1: Live Drawing
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+Generates a list of participants currently present in a live Zoom meeting and automatically enters them into a fortune wheel-style drawing.
 
-### Compiles and minifies for production
-```
-npm run build
-```
+## Part 2: Past Meeting Participants
 
-### Lints and fixes files
-```
-npm run lint
-```
+Generates a list of past Zoom meeting participants, with an option to download .csv file.
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Demo
+
+_Coming Soon_
