@@ -1,10 +1,13 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const express = require('express');
+const serveStatic = require('serve-static');
+const path = require('path');
 const axios = require('axios');
 const PORT = process.env.PORT || 3080;
 
 const app = express();
+app.use(serveStatic(path.join(__dirname, 'dist')));
 
 const payload = {
   iss: process.env.API_KEY,
