@@ -5,7 +5,7 @@
       <el-button type="primary" @click="startOver">Start Over</el-button>
     </div>
     <div v-else v-loading="loading" element-loading-spinner="el-icon-loading">
-      <h2>Welcome to SDCIA raffle prize randomizer!</h2>
+      <h2>Welcome to SDCIA participant list generator!</h2>
       <el-button id="live-btn" type="primary" @click="generateLiveList"
         >LIVE List</el-button
       >
