@@ -7,7 +7,7 @@
       :fields="csvFields"
       name="participants.csv"
     >
-      <el-button type="primary" @click="$event.target.blur()"
+      <el-button type="primary" @click="$event.currentTarget.blur()"
         >Download .csv</el-button
       >
     </JsonCSV>
