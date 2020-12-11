@@ -8,7 +8,7 @@ const axios = require('axios');
 const PORT = process.env.PORT || 3080;
 
 const app = express();
-app.use(wwwhisper());
+app.use(wwwhisper(false));
 app.use(serveStatic(path.join(__dirname, 'dist')));
 
 const payload = {
