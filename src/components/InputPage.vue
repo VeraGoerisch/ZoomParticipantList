@@ -13,7 +13,7 @@
         <div slot="content">
           <p>
             Generate a list of participants currently present in a live meeting
-            and automatically enter them into a drawing.
+            <br />and automatically enter them into a drawing.
           </p>
           <p>CAUTION: do not use if you have more than one meeting running.</p>
         </div>
