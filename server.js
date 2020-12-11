@@ -1,15 +1,36 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const express = require('express');
-const wwwhisper = require('connect-wwwhisper');
 const serveStatic = require('serve-static');
+const basicAuth = require('express-basic-auth');
 const path = require('path');
 const axios = require('axios');
 const PORT = process.env.PORT || 3080;
+const userId = process.env.USER_ID;
+const userPassword = process.env.USER_PASSWORD;
+
+const { testParticipants } = require('./testData');
 
 const app = express();
-app.use(wwwhisper(false));
-app.use(serveStatic(path.join(__dirname, 'dist')));
+
+app.use([
+  basicAuth({
+    authorizer: authorizeUser,
+    challenge: true,
+  }),
+  serveStatic(path.join(__dirname, 'dist')),
+]);
+
+function authorizeUser(username, password) {
+  const testUser = basicAuth.safeCompare(username, 'demo_user');
+  const testPassword = basicAuth.safeCompare(password, 'demo_pass');
+  if (testUser & testPassword) {
+    return true;
+  }
+  const userMatches = basicAuth.safeCompare(username, userId);
+  const passwordMatches = basicAuth.safeCompare(password, userPassword);
+  return userMatches & passwordMatches;
+}
 
 const payload = {
   iss: process.env.API_KEY,
@@ -17,7 +38,28 @@ const payload = {
 };
 const token = jwt.sign(payload, process.env.SECRET);
 
+app.get('/logout', function(req, res) {
+  //res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
+
+  //res.redirect(401, '/');
+  //res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
+  res.status(401).send('Successfully logged out');
+  //res.serveStatic(path.join(__dirname, 'dist'));
+});
+
+async function getTestParticipants() {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(testParticipants);
+    }, 1000);
+  });
+}
+
 app.get('/api/participants', async function(req, res) {
+  if (req.auth.user == 'demo_user') {
+    res.send(await getTestParticipants());
+    return;
+  }
   const { meetingType, meetingId, participantStatus } = req.query;
   try {
     const participants = await fetchParticipants(
@@ -33,6 +75,10 @@ app.get('/api/participants', async function(req, res) {
 });
 
 app.get('/api/live-participants', async function(req, res) {
+  if (req.auth.user == 'demo_user') {
+    res.send(await getTestParticipants());
+    return;
+  }
   try {
     const meetingId = await getMeetingId();
     const participants = await fetchParticipants(meetingId, 'live', 'active');
@@ -44,7 +90,6 @@ app.get('/api/live-participants', async function(req, res) {
 });
 
 async function getMeetingId() {
-  const userId = process.env.USER_ID;
   const url = `https://api.zoom.us/v2/users/${userId}/meetings`;
   const config = getConfig('live');
   const response = await axios.get(url, config);

@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <el-link type="primary" class="logout-link" @click="signOut"
+      >Sign Out</el-link
+    >
     <img v-if="!showPrizeWheel" alt="SDCIA logo" src="./assets/logo.png" />
     <PrizeWheel v-if="showPrizeWheel" :participants="participants" />
     <ParticipantList v-if="showParticipantList" :participants="participants" />
@@ -12,6 +15,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import InputPage from './components/InputPage.vue';
 import ParticipantList from './components/ParticipantList';
 import PrizeWheel from './components/PrizeWheel';
@@ -39,6 +43,14 @@ export default {
       this.participants = results;
       this.showParticipantList = true;
     },
+    signOut() {
+      axios
+        .get('/logout')
+        .then(() => {})
+        .catch(() => {
+          location.reload();
+        });
+    },
   },
 };
 </script>
@@ -49,5 +61,12 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 10px;
+  position: relative;
+}
+.logout-link {
+  position: absolute !important;
+  top: 0;
+  right: 0;
+  margin-right: 15px;
 }
 </style>

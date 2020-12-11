@@ -43,6 +43,11 @@ export default {
     };
   },
   mounted() {
+    if (this.participants.length < 30) {
+      this.canvasOptions.fontSize = 16;
+      this.canvasOptions.lineHeight = 12;
+      this.canvasOptions.textRadius = 320;
+    }
     this.prizes = this.mapParticipants();
   },
   methods: {
@@ -57,7 +62,7 @@ export default {
       });
       this.canvasOptions.btnText = 'GO';
       this.winner = winner;
-      setTimeout(this.showWinnerMsg, 1000);
+      setTimeout(this.showWinnerMsg, 800);
     },
     showWinnerMsg() {
       this.$msgbox({
@@ -103,15 +108,17 @@ export default {
 .winner-message.el-message-box {
   font-family: Helvetica, Arial, sans-serif;
   height: 200px;
-  width: 850px;
+  width: 90%;
+  max-width: 850px;
 }
 .winner-message .el-message-box__title {
   font-size: 30px;
   margin-top: 25px;
 }
-.winner-message .el-message-box__content {
+.winner-message .el-message-box__message p {
   font-size: 30px;
+  line-height: 36px;
   font-weight: bold;
-  margin-top: 25px;
+  margin-top: 15px;
 }
 </style>
