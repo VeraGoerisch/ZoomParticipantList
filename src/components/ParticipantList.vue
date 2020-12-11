@@ -1,9 +1,6 @@
 <template>
   <div>
     <h3>Total participants: {{ participants.length }}</h3>
-    <p v-for="participant in participants" :key="participant.user_id">
-      {{ participant.user_name }} - {{ participant.email }}
-    </p>
     <JsonCSV
       id="download"
       :data="participants"
@@ -14,6 +11,9 @@
         >Download .csv</el-button
       >
     </JsonCSV>
+    <p v-for="participant in participants" :key="participant.user_id">
+      {{ participant.user_name }} - {{ participant.email }}
+    </p>
   </div>
 </template>
 
@@ -51,9 +51,6 @@ export default {
 </script>
 
 <style scoped>
-h3 {
-  margin-bottom: 30px;
-}
 #download {
   display: inline-block;
 }
