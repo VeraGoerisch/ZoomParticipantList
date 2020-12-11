@@ -5,11 +5,10 @@ const serveStatic = require('serve-static');
 const basicAuth = require('express-basic-auth');
 const path = require('path');
 const axios = require('axios');
+const { testParticipants } = require('./testData');
 const PORT = process.env.PORT || 3080;
 const userId = process.env.USER_ID;
 const userPassword = process.env.USER_PASSWORD;
-
-const { testParticipants } = require('./testData');
 
 const app = express();
 
@@ -21,43 +20,15 @@ app.use([
   serveStatic(path.join(__dirname, 'dist')),
 ]);
 
-function authorizeUser(username, password) {
-  const testUser = basicAuth.safeCompare(username, 'demo_user');
-  const testPassword = basicAuth.safeCompare(password, 'demo_pass');
-  if (testUser & testPassword) {
-    return true;
-  }
-  const userMatches = basicAuth.safeCompare(username, userId);
-  const passwordMatches = basicAuth.safeCompare(password, userPassword);
-  return userMatches & passwordMatches;
-}
-
-const payload = {
+const jwtPayload = {
   iss: process.env.API_KEY,
   exp: new Date().getTime() + 5000,
 };
-const token = jwt.sign(payload, process.env.SECRET);
-
-app.get('/logout', function(req, res) {
-  //res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
-
-  //res.redirect(401, '/');
-  //res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
-  res.status(401).send('Successfully logged out');
-  //res.serveStatic(path.join(__dirname, 'dist'));
-});
-
-async function getTestParticipants() {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve(testParticipants);
-    }, 1000);
-  });
-}
+const token = jwt.sign(jwtPayload, process.env.SECRET);
 
 app.get('/api/participants', async function(req, res) {
   if (req.auth.user == 'demo_user') {
-    res.send(await getTestParticipants());
+    res.send(await fetchTestParticipants());
     return;
   }
   const { meetingType, meetingId, participantStatus } = req.query;
@@ -76,7 +47,7 @@ app.get('/api/participants', async function(req, res) {
 
 app.get('/api/live-participants', async function(req, res) {
   if (req.auth.user == 'demo_user') {
-    res.send(await getTestParticipants());
+    res.send(await fetchTestParticipants());
     return;
   }
   try {
@@ -88,6 +59,21 @@ app.get('/api/live-participants', async function(req, res) {
     res.status(error.status).send(error.message);
   }
 });
+
+app.get('/logout', function(req, res) {
+  res.status(401).send('Logged out');
+});
+
+function authorizeUser(username, password) {
+  const testUser = basicAuth.safeCompare(username, 'demo_user');
+  const testPassword = basicAuth.safeCompare(password, 'demo_pass');
+  if (testUser & testPassword) {
+    return true;
+  }
+  const userMatches = basicAuth.safeCompare(username, userId);
+  const passwordMatches = basicAuth.safeCompare(password, userPassword);
+  return userMatches & passwordMatches;
+}
 
 async function getMeetingId() {
   const url = `https://api.zoom.us/v2/users/${userId}/meetings`;
@@ -103,6 +89,26 @@ async function getMeetingId() {
   }
   const meetingId = response.data.meetings[0].id;
   return meetingId;
+}
+
+async function fetchTestParticipants() {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(testParticipants);
+    }, 1000);
+  });
+}
+
+function getConfig(meetingType) {
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    params: {
+      type: meetingType,
+      page_size: 300,
+    },
+  };
 }
 
 async function fetchParticipants(
@@ -123,16 +129,8 @@ async function fetchParticipants(
   return participants;
 }
 
-function getConfig(meetingType) {
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    params: {
-      type: meetingType,
-      page_size: 300,
-    },
-  };
+function filterActiveParticipants(participants) {
+  return participants.filter(participant => !participant.leave_time);
 }
 
 function parseError(e) {
@@ -147,10 +145,6 @@ function parseError(e) {
       : 'Something went wrong, please try again later.';
   }
   return error;
-}
-
-function filterActiveParticipants(participants) {
-  return participants.filter(participant => !participant.leave_time);
 }
 
 app.listen(PORT, () => {
