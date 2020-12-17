@@ -10,7 +10,7 @@ Generates a list of past Zoom meeting participants, with an option to download .
 
 ## Demo
 
-View a simple demo of this app [here](https://zoom-participant-list.herokuapp.com/)
+View a simple demo of this app [here](https://zoom-participant-list.herokuapp.com/) (demo user doesn't have access to Zoom API and returns fake participants).
 
 **Username:** demo_user
 
